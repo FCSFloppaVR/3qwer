@@ -1,74 +1,20 @@
--- Place this LocalScript inside StarterPlayerScripts or a ScreenGui
+-- LocalScript (put inside StarterPlayerScripts or a ScreenGui)
 
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
+local mouse = player:GetMouse()
 
-local savedPosition = nil
-
--- GUI Setup
-local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "TeleportGui"
-
--- Button 1: Save Place
-local saveBtn = Instance.new("TextButton")
-saveBtn.Size = UDim2.new(0, 150, 0, 40)
-saveBtn.Position = UDim2.new(0, 20, 0, 50)
-saveBtn.Text = "Save Place"
-saveBtn.Parent = screenGui
-
--- Button 2: Teleport
-local tpBtn = Instance.new("TextButton")
-tpBtn.Size = UDim2.new(0, 150, 0, 40)
-tpBtn.Position = UDim2.new(0, 20, 0, 100)
-tpBtn.Text = "Teleport"
-tpBtn.Parent = screenGui
-
--- Helper: Get all parts to hide/restore
-local function getAllParts()
-	local parts = {}
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("BasePart") and not obj:IsDescendantOf(character) then
-			table.insert(parts, obj)
+mouse.Button1Down:Connect(function()
+	local target = mouse.Target
+	if target then
+		local name = target.Name
+		if setclipboard then
+			setclipboard(name)
+			print("Copied to clipboard:", name)
+		else
+			warn("Clipboard access is not supported in this environment.")
 		end
-	end
-	return parts
-end
-
--- Save Button Function
-saveBtn.MouseButton1Click:Connect(function()
-	character = player.Character or player.CharacterAdded:Wait()
-	local root = character:WaitForChild("HumanoidRootPart")
-	savedPosition = root.Position
-	print("Saved position:", savedPosition)
-end)
-
--- Teleport Button Function
-tpBtn.MouseButton1Click:Connect(function()
-	if not savedPosition then
-		warn("No position saved yet!")
-		return
-	end
-
-	character = player.Character or player.CharacterAdded:Wait()
-	local root = character:WaitForChild("HumanoidRootPart")
-
-	local parts = getAllParts()
-
-	-- Turn off parts
-	for _, part in ipairs(parts) do
-		part.Transparency = 1
-		part.CanCollide = false
-	end
-
-	-- Teleport player
-	root.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0)) -- slight offset to avoid falling through
-
-	task.wait(1)
-
-	-- Turn on parts
-	for _, part in ipairs(parts) do
-		part.Transparency = 0
-		part.CanCollide = true
 	end
 end)
