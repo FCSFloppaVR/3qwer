@@ -1,39 +1,20 @@
--- LocalScript (place in StarterPlayerScripts or a ScreenGui)
+-- LocalScript (place inside StarterPlayerScripts)
 
-local player = game:GetService("Players").LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
--- GUI setup
-local screenGui = Instance.new("ScreenGui", playerGui)
-screenGui.Name = "DeleteByNameGui"
-
-local textBox = Instance.new("TextBox", screenGui)
-textBox.Size = UDim2.new(0, 200, 0, 40)
-textBox.Position = UDim2.new(0, 20, 0, 50)
-textBox.PlaceholderText = "Enter object name"
-textBox.Text = ""
-
-local button = Instance.new("TextButton", screenGui)
-button.Size = UDim2.new(0, 200, 0, 40)
-button.Position = UDim2.new(0, 20, 0, 100)
-button.Text = "Delete All With That Name"
-
--- Function to delete matching objects
-button.MouseButton1Click:Connect(function()
-	local nameToDelete = textBox.Text
-	if nameToDelete == "" then
-		warn("No name entered.")
-		return
-	end
-
+local function deleteObjectsByName(nameToDelete)
 	local count = 0
-
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		if obj.Name == nameToDelete and obj:IsA("BasePart") then
 			obj:Destroy()
 			count += 1
 		end
 	end
-
 	print("Deleted", count, "object(s) named", nameToDelete)
+end
+
+-- Listen to local player chat
+player.Chatted:Connect(function(message)
+	deleteObjectsByName(message)
 end)
