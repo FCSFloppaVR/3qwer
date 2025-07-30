@@ -1,8 +1,24 @@
--- LocalScript (place inside StarterPlayerScripts)
+-- LocalScript: Place in StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local playerGui = player:WaitForChild("PlayerGui")
 
+-- === Feature 1: Click to copy object name ===
+mouse.Button1Down:Connect(function()
+	local target = mouse.Target
+	if target then
+		if setclipboard then
+			setclipboard(target.Name)
+			print("Copied to clipboard:", target.Name)
+		else
+			warn("Clipboard not supported in this environment.")
+		end
+	end
+end)
+
+-- === Feature 2: Chat to delete objects by name ===
 local function deleteObjectsByName(nameToDelete)
 	local count = 0
 	for _, obj in ipairs(workspace:GetDescendants()) do
@@ -14,7 +30,49 @@ local function deleteObjectsByName(nameToDelete)
 	print("Deleted", count, "object(s) named", nameToDelete)
 end
 
--- Listen to local player chat
 player.Chatted:Connect(function(message)
+	-- Optional: add command filtering like "!delete Part"
 	deleteObjectsByName(message)
 end)
+
+-- === Feature 3: Button to enable all objects and copy their names ===
+-- GUI setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "EnableObjectsGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 220, 0, 40)
+button.Position = UDim2.new(0, 20, 0, 50)
+button.Text = "Enable All + Copy Names"
+button.BackgroundColor3 = Color3.fromRGB(35, 150, 255)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 20
+button.Parent = screenGui
+
+-- Function to enable and copy
+local function enableAndCopyAll()
+	local allNames = {}
+	local count = 0
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			obj.Transparency = 0
+			obj.CanCollide = true
+			table.insert(allNames, obj.Name)
+			count += 1
+		end
+	end
+
+	if setclipboard then
+		setclipboard(table.concat(allNames, "\n"))
+		print("Copied", count, "object names to clipboard.")
+	else
+		warn("Clipboard not supported in this environment.")
+	end
+end
+
+-- Button click handler
+button.MouseButton1Click:Connect(enableAndCopyAll)
